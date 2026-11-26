@@ -1,1 +1,114 @@
-# 13-03
+# Домашнее задание к занятию "`Защита сети`" - `Сидоренко Алексей`
+
+
+### Подготовка к выполнению заданий
+
+1. Подготовка защищаемой системы:
+
+- установите **Suricata**,
+- установите **Fail2Ban**.
+
+2. Подготовка системы злоумышленника: установите **nmap** и **thc-hydra** либо скачайте и установите **Kali linux**.
+
+Обе системы должны находится в одной подсети.
+
+---
+
+### Задание 1
+
+Проведите разведку системы и определите, какие сетевые службы запущены на защищаемой системе:
+
+**sudo nmap -sA < ip-адрес >**
+
+**sudo nmap -sT < ip-адрес >**
+
+**sudo nmap -sS < ip-адрес >**
+
+**sudo nmap -sV < ip-адрес >**
+
+По желанию можете поэкспериментировать с опциями: https://nmap.org/man/ru/man-briefoptions.html.
+
+
+*В качестве ответа пришлите события, которые попали в логи Suricata и Fail2Ban, прокомментируйте результат.*
+
+### Ответ 1
+
+### Выполненные команды:
+
+```bash
+sudo nmap -sA 192.168.56.101
+sudo nmap -sT 192.168.56.101
+sudo nmap -sS 192.168.56.101
+sudo nmap -sV 192.168.56.101
+```
+
+![Выполненные команды](img/001.png)`
+
+## События в логах
+
+![События в логах](img/002.png)`
+
+## Комментарий к результату:
+При сканировании Ubuntu (192.168.56.101) с помощью nmap были обнаружены следующие открытые службы:
+SSH (порт 22) — OpenSSH 10.2p1 Ubuntu 2ubuntu3.8
+Suricata успешно зафиксировала сканирования:
+При -sA (ACK scan): Suricata зафиксировала подозрительный трафик
+При -sT (TCP Connect): события ET SCAN Potential Nmap SYN Scan
+При -sS (SYN scan, stealth): события ET SCAN Potential Nmap SYN Scan
+При -sV (version detection): события ET SCAN Suspicious inbound to MySQL port 3306, ET SCAN Suspicious inbound to PostgreSQL port 5432, ET SCAN Suspicious inbound to MSSQL port 1433, ET SCAN Potential VNC Scan 5800-5820, ET SCAN Suspicious inbound to Oracle SQL port 1521
+
+---
+
+### Задание 2
+
+Проведите атаку на подбор пароля для службы SSH:
+
+**hydra -L users.txt -P pass.txt < ip-адрес > ssh**
+
+1. Настройка **hydra**: 
+ 
+ - создайте два файла: **users.txt** и **pass.txt**;
+ - в каждой строчке первого файла должны быть имена пользователей, второго — пароли. В нашем случае это могут быть случайные строки, но ради эксперимента можете добавить имя и пароль существующего пользователя.
+
+Дополнительная информация по **hydra**: https://kali.tools/?p=1847.
+
+2. Включение защиты SSH для Fail2Ban:
+
+-  открыть файл /etc/fail2ban/jail.conf,
+-  найти секцию **ssh**,
+-  установить **enabled**  в **true**.
+
+Дополнительная информация по **Fail2Ban**:https://putty.org.ru/articles/fail2ban-ssh.html.
+
+
+
+*В качестве ответа пришлите события, которые попали в логи Suricata и Fail2Ban, прокомментируйте результат.*
+
+### Ответ 3
+
+## Подготовка файлов:
+
+user.txt:
+```txt
+admin
+root
+osboxes
+test
+user
+```
+
+pass:
+```txt
+123456
+password
+qwerty
+admin
+osboxes.org
+test123
+```
+
+## Результаты атаки:
+
+![Команда](img/003.png)`
+
+![Логи fail2ban](img/004.png)`
